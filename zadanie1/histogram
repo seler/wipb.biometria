@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+from PIL import Image, ImageDraw
+
+
+def get_histogram(infile):
+    img = Image.open(infile)
+    im = img.load()
+
+    width, height = img.size
+
+    histogram = {}
+    for i, c in enumerate(img.mode):
+        histogram[c] = [0] * 256
+
+    if img.mode == 'L':
+        def test(h, x):
+            h['L'][x] += 1
+    else:
+        def test(h, x):
+            for i, c in enumerate(img.mode):
+                h[c][x[i]] += 1
+
+    for i in range(width):
+        for j in range(height):
+            test(histogram, im[i, j])
+
+    return histogram
+
+
+def main(infile, outfile):
+
+    histogram = get_histogram(infile)
+
+
+    """
+    im = Image.new('RGB', (width, height), (255, 255, 255))
+    draw = ImageDraw.Draw(im)
+
+    color = (0, 0, 0)
+
+    draw.line((0, 0) + im.size, fill=color)
+    draw.line((0, height - 1, width - 1, 0), fill=color)
+    draw.rectangle((0, 0, width - 1, height - 1), outline=color)
+
+    font_path = finders.find("bricks/fonts/DejaVuSansMono.ttf")
+    font = ImageFont.truetype(font_path, 15)
+    text = "{0}x{1}".format(width, height)
+    text_pos = (width / 2. - font.getsize(text)[0] / 2. - 1, height / 1.25 - font.getsize(text)[1] / 2. - 1)
+    draw.text(text_pos, text, fill=color, font=font)
+    text = IMAGE_ERROR_TEXT
+    text_pos = (width / 2. - font.getsize(text)[0] / 2. - 1, height / 4. - font.getsize(text)[1] / 2. - 1)
+    draw.text(text_pos, text, fill=color, font=font)
+
+    del draw
+
+    # saving image
+    fp = StringIO()
+    fp.name = image_path
+    im.save(fp, 'PNG')
+    fp.seek(0)
+    cf = ContentFile(fp.read())
+
+    image_path_saved = image.storage.save(image_path, cf)
+    """
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('infile', type=str, nargs=1)
+    parser.add_argument('outfile', type=str, nargs=1)
+    args = parser.parse_args()
+
+    main(args.infile[0], args.outfile[0])
