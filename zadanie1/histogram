@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+import os
 from PIL import Image, ImageDraw
+import itertools
 
 
 def get_histogram(infile):
@@ -24,44 +26,30 @@ def get_histogram(infile):
         for j in range(height):
             test(histogram, im[i, j])
 
-    return histogram
+    max_value = width * height
+
+    return histogram, max_value
 
 
 def main(infile, outfile):
 
-    histogram = get_histogram(infile)
+    histogram, max_value = get_histogram(infile)
 
+    max_value = max(list(itertools.chain(*histogram.values())))
 
-    """
-    im = Image.new('RGB', (width, height), (255, 255, 255))
-    draw = ImageDraw.Draw(im)
+    height, width = 256, 256
+    path, ext = os.path.splitext(outfile)
 
-    color = (0, 0, 0)
+    for color, values in histogram.items():
+        im = Image.new('1', (height, width), 1)
+        draw = ImageDraw.Draw(im)
 
-    draw.line((0, 0) + im.size, fill=color)
-    draw.line((0, height - 1, width - 1, 0), fill=color)
-    draw.rectangle((0, 0, width - 1, height - 1), outline=color)
+        for i, value in enumerate(values):
+            if value:
+                length = value * height / max_value
+                draw.line((i, height - length, i, height))
 
-    font_path = finders.find("bricks/fonts/DejaVuSansMono.ttf")
-    font = ImageFont.truetype(font_path, 15)
-    text = "{0}x{1}".format(width, height)
-    text_pos = (width / 2. - font.getsize(text)[0] / 2. - 1, height / 1.25 - font.getsize(text)[1] / 2. - 1)
-    draw.text(text_pos, text, fill=color, font=font)
-    text = IMAGE_ERROR_TEXT
-    text_pos = (width / 2. - font.getsize(text)[0] / 2. - 1, height / 4. - font.getsize(text)[1] / 2. - 1)
-    draw.text(text_pos, text, fill=color, font=font)
-
-    del draw
-
-    # saving image
-    fp = StringIO()
-    fp.name = image_path
-    im.save(fp, 'PNG')
-    fp.seek(0)
-    cf = ContentFile(fp.read())
-
-    image_path_saved = image.storage.save(image_path, cf)
-    """
+        im.save("{0}-{1}{2}".format(path, color, ext))
 
 
 if __name__ == "__main__":
